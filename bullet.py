@@ -1,9 +1,11 @@
 import pygame, math, random
 
-class Bullet():
-    def __init__(self, x, y, width, height, speed, targetx, targety):
-        super().__init__()
-        self.rect = pygame.Rect(x, y, width, height)
+class Bullet(pygame.sprite.Sprite):
+    def __init__(self, x, y, speed, targetx, targety, groups):
+        super().__init__(groups)
+        self.image = pygame.image.load('graphics/flame.png')
+        self.rect = self.image.get_rect()
+        self.hitbox = self.rect.inflate(0, 0)
         self.display_surface = pygame.display.get_surface()
 
         angle = math.atan2(targety - y, targetx - x)  # get angle to target in radians
@@ -23,5 +25,5 @@ class Bullet():
         self.rect.x = int(self.x)
         self.rect.y = int(self.y)
 
-    def draw(self, surface):
-        pygame.draw.rect(surface, 'black', self.rect)
+    def draw(self):
+        self.display_surface.blit(self.image, self.rect)

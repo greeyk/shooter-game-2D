@@ -23,36 +23,50 @@ class Level:
 
 
     def create_map(self):
-        for row_index, row in enumerate(WORLD_MAP):
-            for col_index, col in enumerate(row):
-                x = col_index * tile_size
-                y = row_index * tile_size
-                if col == 'x':
-                    Tile((x, y), [self.visible_sprites, self.obstacle_sprites])
-                if col == 'p':
-                    self.player = Player((x, y), [self.visible_sprites], self.obstacle_sprites, self.screen)
+        layouts = {'water': import_csv_layout("csv/map_water.csv"),
+                   'lava': import_csv_layout('csv/map_lava.csv'),
+                   'object': import_csv_layout('csv/map_objects.csv')
+                   }
+        graphics = {'objects': import_folder('graphics/objects')
+                    }
+
+        for style, layout in layouts.items():
+            for row_index, row in enumerate(layout):
+                for col_index, col in enumerate(row):
+                    if col != '-1':
+                        x = col_index * tile_size
+                        y = row_index * tile_size
+                        if style == 'water':
+                            Tile((x, y), [self.obstacle_sprites], 'invisble')
+                        if style == 'lava':
+                            Tile((x, y), [self.obstacle_sprites], 'invisble')
+
+                        if style == 'object':
+                            surf = graphics['objects'][int(col)]
+                            Tile((x, y), [self.visible_sprites, self.obstacle_sprites], 'object', surf)
+
+        self.player = Player((3000, 3000), [self.visible_sprites], self.obstacle_sprites)
 
     def create_bullet(self):
         x, y = pygame.mouse.get_pos()
-        player_x = self.player.rect.x - self.visible_sprites.offset.x + 16
-        player_y = self.player.rect.y - self.visible_sprites.offset.y + 16
-        b = Bullet(player_x, player_y, 5, 5, 15, x, y)
+        player_x = self.player.rect.x - self.visible_sprites.offset.x
+        player_y = self.player.rect.y - self.visible_sprites.offset.y
+
+        b = Bullet(player_x, player_y, 20, x, y, [self.visible_sprites, self.obstacle_sprites])
         bullets.append(b)
 
     def draw_bullet(self):
         for b in bullets:
             b.move()
         for b in bullets:
-            b.draw(self.display_surface)
-
+            b.draw()
 
     def run(self):
         # update and draw the game
         self.visible_sprites.custom_draw(self.player)
         self.visible_sprites.update()
-        self.display_surface
         self.draw_bullet()
-        debug(self.player.direction)
+        debug(self.player)
 
 class YSortCameraGroup(pygame.sprite.Group):
     def __init__(self):
@@ -65,7 +79,7 @@ class YSortCameraGroup(pygame.sprite.Group):
         self.offset = pygame.math.Vector2()
 
         # creating floor
-        self.floor_surf = pygame.image.load('graphics/ground.png').convert()
+        self.floor_surf = pygame.image.load('graphics/big_ground.png').convert()
         self.floor_rect = self.floor_surf.get_rect(topleft=(0, 0))
 
     def custom_draw(self, player):
