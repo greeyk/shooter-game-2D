@@ -1,23 +1,29 @@
 import pygame
+
+from bullet import Bullet
 from settings import *
 from support import import_folder
 
 
 class Player(pygame.sprite.Sprite):
-    def __init__(self, pos, groups, obstacle_sprites):
+    def __init__(self, pos, groups, obstacle_sprites, create_attack):
         super().__init__(groups)
         self.image = pygame.image.load('graphics/player.png').convert_alpha()
         self.rect = self.image.get_rect(topleft=pos)
         self.hitbox = self.rect.inflate(-20, -20)
+        self.pos = pos
 
         self.import_player_assets()
         self.status = 'down'
         self.frame_index = 0
         self.animation_speed = 0.2
 
+        # movement and attack
+        self.attacking = False
+        self.attack_cooldown = 300
+        self.create_attack = create_attack
         self.direction = pygame.math.Vector2(0, 0)
         self.speed = 8
-
         self.obstacle_sprites = obstacle_sprites
 
     def import_player_assets(self):
@@ -49,6 +55,21 @@ class Player(pygame.sprite.Sprite):
             self.status = 'down'
         else:
             self.direction.y = 0
+
+        if keys[pygame.K_SPACE]:
+            if self.attacking == False:
+                self.attacking = True
+                self.attack_time = pygame.time.get_ticks()
+                self.create_attack()
+
+
+    def cooldowns(self):
+        current_time = pygame.time.get_ticks()
+
+        if self.attacking:
+            if current_time - self.attack_time >= self.attack_cooldown:
+                self.attacking = False
+
 
     def get_status(self):
         if self.direction.x == 0 and self.direction.y == 0:
@@ -92,6 +113,7 @@ class Player(pygame.sprite.Sprite):
         self.rect = self.image.get_rect(center=self.hitbox.center)
 
     def update(self):
+        self.cooldowns()
         self.get_input()
         self.get_status()
         self.animate()

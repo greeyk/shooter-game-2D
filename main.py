@@ -21,8 +21,8 @@ class Game:
                 if event.type == pygame.QUIT:
                     pygame.quit()
                     sys.exit()
-                if event.type == pygame.MOUSEBUTTONDOWN:
-                    self.level.create_bullet()
+                # if event.type == pygame.MOUSEBUTTONDOWN:
+                #     self.level.create_bullet()
 
             self.screen.fill('black')
             self.level.run()
